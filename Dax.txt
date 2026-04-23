@@ -1,0 +1,78 @@
+1- 
+Average Order Value = [Total Sales]/COUNT(Orders[Order ID])
+
+
+------------------------
+2-
+Discount Loss = 
+SUMX(
+    FILTER(Orders, Orders[Discount] > 0),
+    Orders[Sales] * Orders[Discount]
+)
+
+
+------------------------------
+3-
+High Discount Orders >40% = 
+COUNTROWS(
+    FILTER(Orders, Orders[Discount] >= 0.4)
+)
+
+
+--------------------------------
+4-
+Profit Margin = 
+DIVIDE([Total Profit], [Total Sales], 0)
+
+
+-----------------------
+5-
+Profit Top & Bottom 5 = 
+VAR TopRank   = RANKX(ALL(Orders[Product Name]), [Total Profit], , DESC, Dense)
+VAR BottomRank = RANKX(ALL(Orders[Product Name]), [Total Profit], , ASC,  Dense)
+
+RETURN
+    IF(
+        TopRank <= 5 || BottomRank <= 5,
+        [Total Profit],
+        BLANK()
+    )
+
+
+-------------------
+6-
+Total Profit = SUM(Orders[Profit])
+
+
+-------------------------
+7-
+Total Sales = SUM(Orders[Sales])
+
+
+
+--------------------------
+8-
+YoY Growth = 
+VAR CurrentYearSales = 
+    CALCULATE(
+        [Total Sales],
+        FILTER(
+            ALL(Orders),
+            YEAR(Orders[Order Date]) = YEAR(MAX(Orders[Order Date]))         // This removes ALL slicer filters
+    ))
+
+VAR PreviousYearSales = 
+    CALCULATE(
+        [Total Sales],
+        FILTER(
+            ALL(Orders),
+            YEAR(Orders[Order Date]) = YEAR(MAX(Orders[Order Date])) - 1
+        )
+    )
+
+RETURN
+    DIVIDE(
+        CurrentYearSales - PreviousYearSales,
+        PreviousYearSales,
+        0
+    )
